@@ -1,3 +1,27 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #333;
+}
+
+#wrapper {
+  position: relative;
+  margin-left: 50%;
+  right: 200;
+  width: 400;
+  border: 1px solid #333;
+}
+
 #canvas {
+  background-color: #fff;
+}
+
+#pts {
   background-color: #333;
+  color: #fff;
+  padding: 4px;
+}
+
+h1 {
+  text-align: center;
+  color: green;
 }

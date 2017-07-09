@@ -4,14 +4,19 @@ var pts = document.getElementById("pts");
 var csize = 400
 var sx = sy = 200;
 var ax = ay = 0;
+var acount = 0;
+var asx = asy = null
 var pt = 0;
 var mx = my = 390;
 var tail = [];
-var sxoff = syoff = 0
+var sxoff = syoff = 0;
+var go = false;
 
-var cancolor= "#333"
-var sncolor = "#abc000"
-var apcolor = "#ff0000"
+var cancolor = "#fff"
+var sncolor = "green"
+var apcolor = "orange"
+var aspcolor = "blue"
+var errcolor = "red"
 
 
 function reset() {
@@ -19,43 +24,59 @@ function reset() {
   ctx.fillRect(0, 0, csize, csize);
   sx = sy = 200;
   ax = ay = 0;
-  pt = 0;
   mx = my = 390;
   tail = [];
   sxoff = syoff = 0;
   for (var i = 0; i < 5; i++) {
-    tail.push({ x: sx + (i * 10), y: sy })
+    tail.push({ x: sx + (i * 10), y: sy });
   }
-  console.log(tail)
+  go = false;
+  resetPoints();
   setApple();
+}
+
+function resetPoints() {
+  pt = 0;
+  pts.innerHTML = "Points: " + pt;
 }
 
 function snake() {
   reset();
   setSnake();
   document.body.onkeydown = function (e) {
+    if (go) {
+      reset();
+    }
     switch (e.keyCode) {
       case 37:
-        sxoff = -10;
-        syoff = 0;
+        if (sxoff != 10) {
+          sxoff = -10;
+          syoff = 0;
+        }
         break;
       case 38:
-        sxoff = 0;
-        syoff = -10;
+        if (syoff != 10) {
+          sxoff = 0;
+          syoff = -10;
+        }
         break;
       case 39:
-        sxoff = 10;
-        syoff = 0;
+        if (sxoff != -10) {
+          sxoff = 10;
+          syoff = 0;
+        }
         break;
       case 40:
-        sxoff = 0;
-        syoff = 10;
+        if (syoff != -10) {
+          sxoff = 0;
+          syoff = 10;
+        }
         break;
       case 27:
         return reset();
     }
   };
-  setInterval(setSnake, 75)
+  setInterval(setSnake, 60)
 }
 
 function setApple() {
@@ -65,6 +86,24 @@ function setApple() {
   } while (ax == sx && ay == sy)
   ctx.fillStyle = apcolor;
   ctx.fillRect(ax, ay, 10, 10);
+  if (acount != 0 && acount % 5 == 0) {
+    setSpecial();
+  }
+  acount++;
+}
+
+function setSpecial() {
+  do {
+    asx = Math.floor(Math.random() * mx / 10) * 10;
+    asy = Math.floor(Math.random() * my / 10) * 10;
+  } while ((asx == sx && asy == sy) || (asx == ax && asy == ay))
+  ctx.fillStyle = aspcolor;
+  ctx.fillRect(asx, asy, 10, 10);
+  setTimeout(function () {
+    ctx.fillStyle = cancolor;
+    ctx.fillRect(asx, asy, 10, 10);
+    asx = asy = null;
+  }, 5000)
 }
 
 function setSnake() {
@@ -87,6 +126,14 @@ function setSnake() {
   if (tail[0].y > my) {
     tail[0].y -= csize;
   }
+  if (detectCrash()) {
+    sxoff = 0;
+    syoff = 0;
+    ctx.fillStyle = errcolor;
+    ctx.fillRect(tail[0].x, tail[0].y, 10, 10);
+    go = true;
+    return
+  }
   ctx.fillStyle = sncolor;
   ctx.fillRect(tail[0].x, tail[0].y, 10, 10);
   ctx.fillStyle = cancolor;
@@ -101,9 +148,27 @@ function setSnake() {
   if (sx == ax && sy == ay) {
     tail.push({ x: lx, y: ly })
     pt++
-    pts.innerHTML = "Points: " + pt
+    pts.innerHTML = "Points: " + pt;
     setApple();
   }
+  if (sx == asx && sy == asy) {
+    tail.push({ x: lx, y: ly })
+    pt+=5
+    pts.innerHTML = "Points: " + pt;
+  }
+}
+
+function detectCrash() {
+  for (var i = 1; i < tail.length; i++) {
+    if (tail[i].x == tail[0].x && tail[i].y == tail[0].y) {
+      return true
+    }
+  }
+  return false
+}
+
+function gameOver() {
+
 }
 
 snake()
